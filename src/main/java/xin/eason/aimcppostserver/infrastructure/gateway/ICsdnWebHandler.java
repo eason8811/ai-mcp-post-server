@@ -22,7 +22,7 @@ public interface ICsdnWebHandler {
             "accept: application/json, text/plain, */*",
             "accept-language: zh-CN,zh;q=0.9",
             "cache-control: no-cache",
-            "content-Type: application/json;charset=utf-8",
+            "content-type: application/json;",
             "origin: https://mpbeta.csdn.net",
             "pragma: no-cache",
             "priority: u=1, i",
@@ -35,8 +35,8 @@ public interface ICsdnWebHandler {
             "sec-fetch-site: same-site",
             "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 SLBrowser/9.0.6.2081 SLBChan/10 SLBVPV/64-bit",
             "x-ca-key: 203803574",
-            "x-ca-nonce: 912be2c5-fff8-43e3-ba3d-2a29232e8e9d",
-            "x-ca-signature: WFWsAZhxBGN+w35BRgus7VXh5xwhKxBLodUz2f8ZLaI=",
+            "x-ca-nonce: a29e75a3-76fc-44a1-9a30-de9819d87f66",
+            "x-ca-signature: xPtjv8SsXABWYwYEV3vrTOHSFCyUpZUNAnkyqipuIl0=",
             "x-ca-signature-headers: x-ca-key,x-ca-nonce"
     })
     @POST("/blog-console-api/v1/postedit/saveArticle")

@@ -1,8 +1,14 @@
 package xin.eason.aimcppostserver.infrastructure.adapter.port;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONFactory;
+import com.alibaba.fastjson2.reader.ObjectReaderProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.RequestBody;
+import okio.Buffer;
 import org.springframework.stereotype.Service;
+import retrofit2.Response;
 import xin.eason.aimcppostserver.domain.adapter.IWebPort;
 import xin.eason.aimcppostserver.domain.model.PostRequest;
 import xin.eason.aimcppostserver.domain.model.PostResponse;
@@ -11,6 +17,8 @@ import xin.eason.aimcppostserver.infrastructure.gateway.dto.PostRequestDTO;
 import xin.eason.aimcppostserver.infrastructure.gateway.dto.PostResponseDTO;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * CSDN 发帖实现类
@@ -43,7 +51,22 @@ public class CsdnWebPort implements IWebPort {
 
             log.info("正在准备发帖, 发帖请求 DTO: {}", postRequestDTO);
 
-            PostResponseDTO postResponseDTO = csdnWebHandler.postArticle(postRequestDTO, cookieString).execute().body();
+            Response<PostResponseDTO> execute = csdnWebHandler.postArticle(postRequestDTO, cookieString).execute();
+            if (!execute.isSuccessful()) {
+                Map<String, Object> map = JSON.parseObject(execute.errorBody().string());
+                PostResponseDTO postResponseDTO = PostResponseDTO.builder()
+                        .data(null)
+                        .code((Integer) map.get("code"))
+                        .msg((String) map.get("msg"))
+                        .traceId((String) map.get("traceId"))
+                        .build();
+                log.error("请求失败, 状态码: {}, 响应体: {}", execute.code(), postResponseDTO);
+                return PostResponse.builder()
+                        .code(postResponseDTO.getCode())
+                        .msg(postResponseDTO.getMsg())
+                        .build();
+            }
+            PostResponseDTO postResponseDTO = execute.body();
 
             if (postResponseDTO == null)
                 return null;
@@ -73,4 +96,46 @@ public class CsdnWebPort implements IWebPort {
         }
         return response;
     }
+
+    // 工具类方法
+    public static String requestToCurl(okhttp3.Request request) {
+        StringBuilder curlCmd = new StringBuilder("curl");
+
+        // 添加 method
+        curlCmd.append(" -X ").append(request.method());
+
+        // 添加 headers
+        for (Map.Entry<String, List<String>> header : request.headers().toMultimap().entrySet()) {
+            for (String value : header.getValue()) {
+                curlCmd.append(" -H ")
+                        .append("\"")
+                        .append(header.getKey()).append(": ").append(value)
+                        .append("\"");
+            }
+        }
+
+        // 添加请求体
+        RequestBody requestBody = request.body();
+        if (requestBody != null) {
+            try {
+                Buffer buffer = new Buffer();
+                requestBody.writeTo(buffer);
+                String bodyStr = buffer.readUtf8();
+
+                curlCmd.append(" --data ")
+                        .append("\"")
+                        .append(bodyStr.replace("\"", "\\\""))  // 转义双引号
+                        .append("\"");
+            } catch (IOException e) {
+                curlCmd.append(" [Error reading body: ").append(e.getMessage()).append("]");
+            }
+        }
+
+        // 添加 URL
+        curlCmd.append(" \"").append(request.url()).append("\"");
+
+        return curlCmd.toString();
+    }
+
+
 }
