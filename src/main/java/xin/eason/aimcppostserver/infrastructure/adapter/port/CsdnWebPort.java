@@ -41,6 +41,8 @@ public class CsdnWebPort implements IWebPort {
             postRequestDTO.setTags(postRequest.getTags());
             postRequestDTO.setDescription(postRequest.getDesc());
 
+            log.info("正在准备发帖, 发帖请求 DTO: {}", postRequestDTO);
+
             PostResponseDTO postResponseDTO = csdnWebHandler.postArticle(postRequestDTO, cookieString).execute().body();
 
             if (postResponseDTO == null)

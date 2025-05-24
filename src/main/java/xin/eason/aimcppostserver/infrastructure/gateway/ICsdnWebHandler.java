@@ -22,7 +22,7 @@ public interface ICsdnWebHandler {
             "accept: application/json, text/plain, */*",
             "accept-language: zh-CN,zh;q=0.9",
             "cache-control: no-cache",
-            "content-type: application/json;",
+            "content-Type: application/json;charset=utf-8",
             "origin: https://mpbeta.csdn.net",
             "pragma: no-cache",
             "priority: u=1, i",
